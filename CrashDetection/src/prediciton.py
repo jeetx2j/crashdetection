@@ -20,17 +20,17 @@ def main():
 
     pred = set.predict([[-612, -1028, 17008, -60, 41, -308]])
 
-    # pred = 1
+    pred = 1
     print(int(pred))
 
     if int(pred) == 1:
         print('Emgergency: Car Crash Detected\nCalling..')
 
-        # engine = pyttsx3.init()
-        # engine.setProperty('voice', 'com.apple.speech.synthesis.voice.veena')   
-        # engine.say("Emergency")
-        # engine.runAndWait()
-        # engine.stop()
+        engine = pyttsx3.init()
+        engine.setProperty('voice', 'com.apple.speech.synthesis.voice.veena')   
+        engine.say("Emergency")
+        engine.runAndWait()
+        engine.stop()
 
 
         f = open('emergency.json')
