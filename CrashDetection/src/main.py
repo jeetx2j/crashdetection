@@ -1,55 +1,37 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-import warnings
+import librosa
+import numpy as np
+from scipy import signal
+import matplotlib.pyplot as plt
 
-warnings.filterwarnings('ignore')
+  
+def find_offset(within_file, find_file, window):
+    y_within, sr_within = librosa.load(within_file, sr=None)
+    y_find, _ = librosa.load(find_file, sr=sr_within)
+
+    c = signal.correlate(y_within, y_find[:sr_within*window], mode='valid', method='fft')
+    peak = np.argmax(c)
+    offset = round(peak / sr_within, 2)
+
+    fig, ax = plt.subplots()
+    ax.plot(c)
+    fig.savefig("cross-correlation.png")
+
+    return offset
+
 
 def main():
-    db = pd.read_csv('dataset/data.csv')
+    aud1 = '4.mp3'
+    aud2 = '1.wav'
     
-    X = db[['ax','ay','az','gx','gy','gz']]
-    Y = db['result']
+    print('Duration of aud1:', librosa.get_duration(filename=aud1))
+    print('Duration of aud2:', librosa.get_duration(filename=aud2))
 
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = 0.25)
+    avgg = round((librosa.get_duration(filename=aud1) + librosa.get_duration(filename=aud2)) // 2)
+    print('Average of durations:', avgg)
 
-    DTree = DecisionTreeClassifier()
-    DTree.fit(X_train, y_train)
-	
-    DTreePred = DTree.predict(X_test)
-    print("Predicted values:")
-    print(DTreePred)
-	
-    DTreeAcuuracy = round(DTree.score(X_test,y_test)*100, 2)
-
-    print("Descision Tree Accuracy : ", DTreeAcuuracy, '%')
-
-    LReg = LogisticRegression()
-    LReg.fit(X_train, y_train)
-	
-    LRegePred = LReg.predict(X_test)
-    print("Predicted values:")
-    print(LRegePred)
-	
-    LRegAcuuracy = round(LReg.score(X_test,y_test)*100, 2)
-
-    print("Logistic Regression Accuracy : ", LRegAcuuracy, '%')
+    offset = find_offset(aud1, aud2, avgg)
+    print(f"Offset: {offset}s" )
 
 
-    RForest = RandomForestClassifier()
-    RForest.fit(X_train, y_train)
-    
-    RForestPred = RForest.predict(X_test)
-    print("Predicted values:")
-    print(RForestPred)
-    
-    RForestAccuracy = round(RForest.score(X_test,y_test)*100, 2)
-
-    print("Random Forest Accuracy : ", RForestAccuracy, '%')
-
-
-
-if __name__ == "__main__":
-	main()
+if __name__ == '__main__':
+    main()
